@@ -4,9 +4,7 @@
 
 The API is running at ```http://localhost:{{cookiecutter.api_port}}/api/v1```.
 
-## Requirements
-
-- Python 3.6: [Instructions](https://www.python.org/downloads/)
+A simple non-api Web-Page is running at ```http://localhost:{{cookiecutter.api_port}}/hello```.
 
 ## Installation
 
@@ -14,14 +12,17 @@ Run ```make``` for a local setup and then ```env/bin/start_debug``` to start the
 
 To start the uWSGI, run ```make start```
 
+
 ## Procedure
 
 First, define your REST API in the configuration under ```/config/api.yml```, 
 then add the Python logic for the *operationId* under /{{cookiecutter.project_slug}}/api
 
-## SwaggerUI
+
+## Swagger
 
 Go to [here](http://localhost:8080/api/v1/ui) to view the brilliant SwaggerUI documentation of your API.
+
 
 {%- if cookiecutter.use_docker.startswith('y') -%}
 ## Docker
@@ -33,6 +34,7 @@ In case you want to run a container locally, run ``make start-docker``. With ``m
 on the running container.
 {%- endif %}
 
+
 ## Healthcheck
 
 Configure a health check under /api/v1/health (GET).
@@ -42,44 +44,14 @@ Additionally, a JSON is returned containing the fields 'health', 'dependencies' 
 correspond to the status codes. The second one is the name of the depending services that cannot be reached and 'message'
 can hold a string defining the cause of a problem.
 
-{%- if cookiecutter.use_logstash.startswith('y') -%}
-## Logstash
+## Testing
 
-By default, this project sends request logs and other (e.g. error logs) to different logstash UDP ports.
+### Benchmarks
 
-Configure the logstash input like this:
-
+```bash
+wrk -d5s -t10 -c200 http://localhost:8080/api/v1/health
 ```
-input {
-    udp {
-        codec => json {}
-        type => "{{cookiecutter.project_slug}}"
-        port => {{cookiecutter.logstash_request_port}}   
-    }
-    udp {
-        codec => json {}
-        type => "{{cookiecutter.project_slug}}_uwsgi"
-        port => {{cookiecutter.logstash_std_port}}   
-    }
-    tcp {
-        codec => json {}
-        type => "{{cookiecutter.project_slug}}_logs"
-        port => {{cookiecutter.logstash_pythonlog_port}}
-    }
-}
 
-filter {
-    if [type] == "{{cookiecutter.project_slug}}" {
-        json {
-            source => "message"
-        }
-        mutate {
-            remove_field => [ 'message' ]
-        }
-    }
-}
-```
-{%- endif -%}
 ## Resources
 ### Connexion
 [Documentation](https://connexion.readthedocs.io/en/latest/)

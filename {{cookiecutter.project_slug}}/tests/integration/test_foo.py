@@ -1,4 +1,9 @@
-from {{cookiecutter.project_slug}}_test.integration import post_json
+from . import get_json, post_json
+
+
+def test_foo_get():
+    response, status = get_json(f"/foo")
+    assert status == 200
 
 
 def test_foo_post():

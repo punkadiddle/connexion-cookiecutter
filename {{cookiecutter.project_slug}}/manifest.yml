@@ -1,0 +1,6 @@
+---
+# Cloud Foundry Manifest for Python Buildpack 
+applications:
+- name: {{cookiecutter.project_slug}}:
+  memory: 128M
+  command: gunicorn --paste development.ini --bind "localhost:$VCAP_APP_PORT"

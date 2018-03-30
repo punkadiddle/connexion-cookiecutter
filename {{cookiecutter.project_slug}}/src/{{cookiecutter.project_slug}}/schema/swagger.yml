@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
-  title: {{cookiecutter.project_name}}
-  version: "0.1"
+  title: "{{cookiecutter.project_name}}"
+  version: "{{cookiecutter.version}}"
 consumes:
   - application/json
 produces:
@@ -26,7 +26,7 @@ paths:
                 description: Some string.
                 example: Blah!
       responses:
-        200: # If we return with a 200 status code...
+        "200": # If we return with a 200 status code...
           description: Returns a part of the input (hey, it's just a demo...)
           schema:
             type: object
@@ -41,7 +41,7 @@ paths:
       operationId: {{cookiecutter.project_slug}}.api.foo.get
       summary: Simply call an URL and retrieve a JSON data
       responses:
-        200:
+        "200":
           description: Returns a JSON containing a boolean.
           schema:
             type: object
@@ -57,7 +57,7 @@ paths:
       operationId: {{cookiecutter.project_slug}}.api.complicated.complex.get
       summary: Returns a very complex JSON object
       responses:
-        200:
+        "200":
           description: Returns a complex JSON to show how to define a schema with different data types etc.
           schema:
             $ref: '#/definitions/ComplexResponse'
@@ -68,15 +68,15 @@ paths:
       operationId: {{cookiecutter.project_slug}}.api.health.get
       summary: Returns the health of the API.
       responses:
-        200:
+        "200":
           description: Everything is fine.
           schema:
             $ref: 'https://s3.amazonaws.com/sengiai-swagger/general/health.json#/Health'
-        424:
+        "424":
           description: A dependency is not working.
           schema:
             $ref: 'https://s3.amazonaws.com/sengiai-swagger/general/health.json#/Health'
-        503:
+        "503":
           description: The API is broken.
           schema:
             $ref: 'https://s3.amazonaws.com/sengiai-swagger/general/health.json#/Health'
@@ -115,7 +115,7 @@ definitions:
         type: string
         format: date-time
         description: Can you believe it? Even dates can be validated!
-        example: 2016-12-09T22:06:39.103496Z
+        example: '2016-12-09T22:06:39.103496Z'
       aNiceList:
         type: array
         description: Also lists (arrays) are possible. The definition under 'items' must be true for all members of the list.

@@ -1,4 +1,3 @@
-
 def post(request):
     # 'request' is a dictionary containing the parameters defined in
     # config/api.yml and validated by connexion.
@@ -12,6 +11,4 @@ def post(request):
 
 
 def get():
-    return {
-        "bar": True
-    }, 200
+    return {"bar": True}, 200

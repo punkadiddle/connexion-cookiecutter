@@ -1,25 +1,25 @@
 .PHONY: clean start {% if cookiecutter.use_docker.startswith('y') %}build-docker build-and-push start-docker attach-to-docker{% endif %}
 
-all: env/bin/python
+all: venv/bin/python
 
-env/bin/python:
-	python3.6 -m venv env
-	env/bin/pip install --upgrade pip
-	env/bin/pip install wheel
-	env/bin/pip install -r requirements.txt
-	env/bin/python setup.py develop
+venv/bin/python:
+	python3 -m virtualenv venv
+	venv/bin/pip -e .
 
 clean:
-	rm -rfv bin develop-eggs dist downloads eggs env parts
-	rm -fv .DS_Store .coverage .installed.cfg bootstrap.py
+	rm -rfv bin develop-eggs dist downloads .eggs venv parts
+	rm -fv .coverage .installed.cfg bootstrap.py
 	rm -fv logs/*.txt
 	find . -name '*.pyc' -exec rm -fv {} \;
 	find . -name '*.pyo' -exec rm -fv {} \;
 	find . -depth -name '*.egg-info' -exec rm -rfv {} \;
 	find . -depth -name '__pycache__' -exec rm -rfv {} \;
 
-start: env/bin/python
-	env/bin/uwsgi --yaml=config/uwsgi.yml
+start: venv/bin/python
+	venv/bin/gunicorn --paste development.ini
+
+vendor:
+	venv/bin/pip install --download vendor --no-binary :all:
 
 {% if cookiecutter.use_docker.startswith('y') -%}
 build-docker:
@@ -36,8 +36,9 @@ attach-to-docker:
 	 docker exec -i -t {{cookiecutter.project_slug}} /bin/bash 
 {%- endif -%}
 
-update-all-packages: env/bin/python
+update-all-packages: venv/bin/python
 	 env/bin/pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 env/bin/pip install -U
 
-test: env/bin/python
-	env/bin/py.test --cov={{cookiecutter.project_slug}} {{cookiecutter.project_slug}}_test -vv
+test: venv/bin/python
+	venv/bin/python setup.py pytest --addopts --cov={{cookiecutter.project_slug}}
+	

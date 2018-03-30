@@ -1,11 +1,12 @@
 import json
 import re
-
+import pkg_resources
 import yaml
+from tests import client
 
-from {{cookiecutter.project_slug}}_test import client
 
-url_prefix = yaml.load(open("config/api.yml"))['basePath'][1:]
+apiFile = pkg_resources.resource_stream('{{cookiecutter.project_slug}}', 'schema/swagger.yml')
+url_prefix = yaml.load(apiFile)['basePath'][1:]
 
 
 def _prepare_url(url: str) -> str:
