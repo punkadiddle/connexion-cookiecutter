@@ -80,9 +80,10 @@ wrk -d5s -t10 -c200 http://localhost:8080/api/v1/health
 ## Weiterführende Informationen
 
 ### API Design
-[Google Cloud API Designanleitung](https://cloud.google.com/apis/design/)
+[Microsoft REST API Guidelines](https://github.com/Microsoft/api-guidelines/blob/master/Guidelines.md)
 [Zalando API Guidelines](https://zalando.github.io/restful-api-guidelines/)
 [API.yml Editor](http://editor.swagger.io/#/)
+[Visual Guide to what's new in Swagger 3.0](https://blog.readme.io/an-example-filled-guide-to-swagger-3-2/)
 
 ### gUnicorn
 [Tutorial: gUnicorn behind Nginx](https://www.digitalocean.com/community/tutorials/how-to-deploy-python-wsgi-apps-using-gunicorn-http-server-behind-nginx)

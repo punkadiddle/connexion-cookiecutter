@@ -34,7 +34,15 @@ vendor:
 	pipenv run pip freeze --local
 	pipenv run pip download --dest vendor --no-binary :all: .
 
+push: vendor
+	cf push
 
+ssh:
+	echo "SSH funktioniert nur, während der Container läuft."
+	echo "Die Python-Umgebung an einem laufenden Prozess auslesen:"
+	echo "cat /proc/\\$(ps aux | grep gunicorn | grep -v grep | head -n1 | awk '{ print \\$2 }')/environ | tr \\\\0 \\\\n"
+	echo ""
+	cf ssh demo_ap
 
 {% if cookiecutter.use_docker.startswith('y') -%}
 build-docker:
