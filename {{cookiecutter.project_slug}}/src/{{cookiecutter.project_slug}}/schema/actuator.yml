@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: Spring Boot Actuators for Cloud Foundry
   description: Try at creating a minimalist Cloud Foundry compabitle application description.
-  version: "0.1"
+  version: "{% raw %}{{product_version}}{% endraw %}"
 consumes:
   - application/json
 produces:
@@ -12,7 +12,7 @@ basePath: /cloudfoundryapplication
 paths:
   /:
     get:
-      operationId: demo_api.api.actuator.get
+      operationId: {{cookiecutter.project_slug}}.api.actuator.get
       responses:
         200:
           description: Actuator Index
@@ -38,7 +38,7 @@ paths:
   /info:
     get:
       tags: [actuator]
-      operationId: demo_api.api.actuator.info.get
+      operationId: {{cookiecutter.project_slug}}.api.actuator.info.get
       responses:
         200:
           description: sehr informativ
@@ -67,7 +67,7 @@ paths:
   /health:
     get:
       tags: [actuator]
-      operationId: demo_api.api.actuator.health.get
+      operationId: {{cookiecutter.project_slug}}.api.actuator.health.get
       summary: Returns the health of the API.
       externalDocs:
         description: Spring Actuator (Health)
