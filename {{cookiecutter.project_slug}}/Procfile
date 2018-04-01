@@ -1,0 +1,1 @@
+web: gunicorn --paste development.ini --bind :$PORT

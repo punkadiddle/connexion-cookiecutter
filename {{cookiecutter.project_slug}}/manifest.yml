@@ -1,6 +1,11 @@
 ---
-# Cloud Foundry Manifest for Python Buildpack 
+# Cloud Foundry Manifest
 applications:
-- name: {{cookiecutter.project_slug}}:
+- name: {{cookiecutter.project_slug}}
+  buildpack: python_buildpack
   memory: 128M
-  command: gunicorn --paste development.ini --bind "localhost:$VCAP_APP_PORT"
+  # Startbefehl siehe `Procfile`
+  #command: gunicorn --paste development.ini --bind :$PORT
+  health-check-type: port
+  #health-check-type: http
+  #health-check-endpoint: /actuator/health

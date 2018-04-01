@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
   title: "{{cookiecutter.project_name}}"
-  version: "{{cookiecutter.version}}"
+  version: "{% raw %}{{product_version}}{% endraw %}"
 consumes:
   - application/json
 produces:
@@ -61,25 +61,6 @@ paths:
           description: Returns a complex JSON to show how to define a schema with different data types etc.
           schema:
             $ref: '#/definitions/ComplexResponse'
-
-  /health:
-    get:
-      tags: [Healthcheck]
-      operationId: {{cookiecutter.project_slug}}.api.health.get
-      summary: Returns the health of the API.
-      responses:
-        "200":
-          description: Everything is fine.
-          schema:
-            $ref: 'https://s3.amazonaws.com/sengiai-swagger/general/health.json#/Health'
-        "424":
-          description: A dependency is not working.
-          schema:
-            $ref: 'https://s3.amazonaws.com/sengiai-swagger/general/health.json#/Health'
-        "503":
-          description: The API is broken.
-          schema:
-            $ref: 'https://s3.amazonaws.com/sengiai-swagger/general/health.json#/Health'
 
 definitions:
   ComplexResponse:

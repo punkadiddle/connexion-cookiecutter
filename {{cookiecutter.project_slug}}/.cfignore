@@ -1,0 +1,21 @@
+# Stuff to not upload to CF (.gitignore format)
+
+### Python ###
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+dist/
+build/
+
+Dockerfile
+.coverage
+.dockerignore
+.eggs
+.project/
+.pytest_cache
+.pydevproject
+.venv
+.vscode/
+venv

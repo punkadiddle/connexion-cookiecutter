@@ -1,25 +1,40 @@
-.PHONY: clean start {% if cookiecutter.use_docker.startswith('y') %}build-docker build-and-push start-docker attach-to-docker{% endif %}
+.PHONY: clean test start_dev
 
-all: venv/bin/python
+all: test
 
-venv/bin/python:
-	python3 -m virtualenv venv
-	venv/bin/pip -e .
+Pipfile:
+	# Cloud Foundry Python Buildpack verwendet pipenv.
+	# Pipfile soll requirements.txt ablösen, ist aber noch instabil. Aktuell ist setup.cfg
+	# führend (https://github.com/pypa/pipfile).
+	pipenv --three install -e "${PWD}"
+	#python3 -m virtualenv --clear venv
+	#venv/bin/pip install -e .
+
+venv: Pipfile
 
 clean:
-	rm -rfv bin develop-eggs dist downloads .eggs venv parts
-	rm -fv .coverage .installed.cfg bootstrap.py
+	pipenv clean
+	rm -rfv bin develop-eggs dist downloads .eggs venv parts vendor
+	rm -fv Pipfile Pipfile.lock
+	rm -fv .coverage .installed.cfg bootstrap.py requirements.txt 
 	rm -fv logs/*.txt
-	find . -name '*.pyc' -exec rm -fv {} \;
-	find . -name '*.pyo' -exec rm -fv {} \;
-	find . -depth -name '*.egg-info' -exec rm -rfv {} \;
-	find . -depth -name '__pycache__' -exec rm -rfv {} \;
+	find . -name '*.pyc' -or -name '*.pyo' -exec rm -fv {} \;
+	find . -type d -depth -name '*.egg-info' -or -name '__pycache__' -exec rm -rfv {} \;
 
-start: venv/bin/python
-	venv/bin/gunicorn --paste development.ini
+start: Pipfile
+	pipenv run gunicorn --paste production.ini
+
+start_dev: Pipfile
+	pipenv run gunicorn --paste development.ini
 
 vendor:
-	venv/bin/pip install --download vendor --no-binary :all:
+	# Speichert die aktuelle Konfiguration an Abhängigkeiten als requirements.txt
+	# und speichert alle Abhängigkeiten im Ordner vendor.
+	# -> Cloud Foundry Offline Deployment
+	pipenv run pip freeze --local
+	pipenv run pip download --dest vendor --no-binary :all: .
+
+
 
 {% if cookiecutter.use_docker.startswith('y') -%}
 build-docker:
@@ -34,11 +49,10 @@ start-docker:
 
 attach-to-docker:
 	 docker exec -i -t {{cookiecutter.project_slug}} /bin/bash 
-{%- endif -%}
-
-update-all-packages: venv/bin/python
-	 env/bin/pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 env/bin/pip install -U
-
-test: venv/bin/python
-	venv/bin/python setup.py pytest --addopts --cov={{cookiecutter.project_slug}}
+{%- endif %}
 	
+update: Pipfile
+	pipenv update
+
+test: Pipfile
+	pipenv run python setup.py pytest --addopts --cov={{cookiecutter.project_slug}}

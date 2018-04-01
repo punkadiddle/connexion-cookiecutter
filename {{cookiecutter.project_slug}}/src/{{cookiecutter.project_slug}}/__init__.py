@@ -3,10 +3,28 @@ import json
 import pkg_resources
 import yaml
 import os
+import sys
+from cfenv import AppEnv
 from flask import Config as FlaskConfig
 from prance import ResolvingParser
 
-from .notapi.hello import helloPage
+import logging
+
+
+try:
+    # setuptools-scm generiert die Versionsnummer aus GIT-Metadaten
+    __version__ = pkg_resources.get_distribution(__name__).version
+except pkg_resources.DistributionNotFound:
+    # package ist nicht installiert
+    __version__ = '0.0.0'
+
+
+class LevelFilter(logging.Filter):
+    def __init__(self, level):
+        self.level = level
+
+    def filter(self, record):
+        return record.levelno < self.level
 
 
 def convertSettingValue(x):
@@ -19,11 +37,14 @@ def convertSettingValue(x):
 
 
 def cloudFoundryfyConfig(config: FlaskConfig):
-    print(os.getenv('VCAP_SERVICES', ''))
+    """ Optionale Anpassung der Flask-Konfiguration mit CF-Umgebung
+    """
+    cfenv = AppEnv()
+    print(cfenv)
 
 
 def main(global_config, **settings):
-    """ This function returns a Pyramid WSGI application.
+    """ WSGI-Server erzeugen und konfigurieren.
     """
 
     #engine = engine_from_config(settings, prefix='sqlalchemy.',
@@ -32,9 +53,21 @@ def main(global_config, **settings):
     #DBSession.configure(bind=engine)
     #Base.metadata.bind = engine
 
-    apiFile = pkg_resources.resource_stream(__name__, 'schema/swagger.yml')
-    parsedDefinition = yaml.load(apiFile)
-    swaggerDefiniton = ResolvingParser(spec_string=json.dumps(parsedDefinition)).specification
+    # Ini-Konfiguration unterstüzt keine Filter, daher hier stderr-Ausgabe
+    # auf Meldungen ab WARNING filtern.
+    for handler in logging.getLogger().handlers:
+        if handler.stream is sys.stderr:
+            handler.addFilter(LevelFilter(logging.WARNING))
+    
+    appInfo = {
+        'product_slug': __package__,
+        'product_version': __version__,
+    }
+
+    # TODO: aus Beispielprojekt, obsolet?
+    #apiFile = pkg_resources.resource_stream(__name__, 'schema/swagger.yml')
+    #parsedDefinition = yaml.load(apiFile)
+    #swaggerDefiniton = ResolvingParser(spec_string=json.dumps(parsedDefinition)).specification
 
     # extrat all flask.* configuration items
     flaskConfig = dict(map(lambda x: (x[0][6:], convertSettingValue(x[1])),
@@ -42,13 +75,18 @@ def main(global_config, **settings):
     DEBUG = flaskConfig.get('DEBUG', False)
 
     # create app instance
-    app = connexion.App("{{cookiecutter.project_name}}", debug=DEBUG, swagger_ui=True)
-    flaskApp = app.app
+    connexionApp = connexion.App("{{cookiecutter.project_name}}", debug=DEBUG, swagger_ui=True)
+    flaskApp = connexionApp.app
 
     # configure
     flaskApp.config.update(flaskConfig)
     cloudFoundryfyConfig(flaskApp.config)
-    app.add_api(swaggerDefiniton, strict_validation=False, validate_responses=False)
+    
+    apiFile = pkg_resources.resource_filename(__name__, 'schema/actuator.yml')
+    connexionApp.add_api(apiFile, strict_validation=False, validate_responses=True)
+    apiFile = pkg_resources.resource_filename(__name__, 'schema/swagger.yml')
+    connexionApp.add_api(apiFile, strict_validation=True, validate_responses=True)
+
     print(yaml.dump(flaskApp.config))
 
     if DEBUG:
@@ -56,12 +94,16 @@ def main(global_config, **settings):
         toolbar = DebugToolbarExtension()
         toolbar.init_app(flaskApp)
 
-    {%- if cookiecutter.use_sql == 'yes' %}
+    {% if cookiecutter.use_sql == 'yes' %}
     from flask_sqlalchemy import SQLAlchemy
     db = SQLAlchemy()
 
     {% endif %}
+    {% if cookiecutter.use_ui == 'yes' %}
     # simple web-ui page without swagger
+    from .ui.hello import helloPage
     flaskApp.register_blueprint(helloPage)
+
+    {% endif %}
 
     return flaskApp

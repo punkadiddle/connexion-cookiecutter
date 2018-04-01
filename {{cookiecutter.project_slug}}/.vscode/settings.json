@@ -18,6 +18,7 @@
     "**/*.pyc": true,
     "**/*.egg-info": true,
     ".eggs": true,
+    ".pytest_cache": true,
     ".tox": true
   },  
 }

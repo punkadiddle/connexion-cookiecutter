@@ -1,0 +1,9 @@
+#!/bin/bash
+# Cloud-Foundry Python-Buildpack post-compile Hook
+# wird nach der Installation des Pakets ausgeführt.
+
+echo ">> Hello Post-Compile <<"
+env
+ls -al
+
+exit 0

@@ -1,4 +1,4 @@
-from {{cookiecutter.project_slug}}.app import app
+from {{cookiecutter.project_slug}} import main
 
 
 # Get Flask app
