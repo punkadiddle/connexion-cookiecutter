@@ -2,17 +2,16 @@ swagger: '2.0'
 info:
   title: Spring Boot Actuators for Cloud Foundry
   description: Try at creating a minimalist Cloud Foundry compabitle application description.
-  version: "{% raw %}{{product_version}}{% endraw %}"
+  version: "0.1"
 consumes:
   - application/json
 produces:
   - application/json
 
-basePath: /cloudfoundryapplication
+basePath: /
 paths:
   /:
     get:
-      operationId: {{cookiecutter.project_slug}}.api.actuator.get
       responses:
         200:
           description: Actuator Index
@@ -21,10 +20,11 @@ paths:
             application/json: {"_links":{"self":{"href":"http://localhost:8080/cloudfoundryapplication"},"auditevents":{"href":"http://localhost:8080/cloudfoundryapplication/auditevents"},"autoconfig":{"href":"http://localhost:8080/cloudfoundryapplication/autoconfig"},"trace":{"href":"http://localhost:8080/cloudfoundryapplication/trace"},"mappings":{"href":"http://localhost:8080/cloudfoundryapplication/mappings"},"metrics":{"href":"http://localhost:8080/cloudfoundryapplication/metrics"},"info":{"href":"http://localhost:8080/cloudfoundryapplication/info"},"beans":{"href":"http://localhost:8080/cloudfoundryapplication/beans"},"loggers":{"href":"http://localhost:8080/cloudfoundryapplication/loggers"},"dump":{"href":"http://localhost:8080/cloudfoundryapplication/dump"},"health":{"href":"http://localhost:8080/cloudfoundryapplication/health"},"heapdump":{"href":"http://localhost:8080/cloudfoundryapplication/heapdump"},"env":{"href":"http://localhost:8080/cloudfoundryapplication/env"},"configprops":{"href":"http://localhost:8080/cloudfoundryapplication/configprops"}}}
           schema:
             type: object
-            required: [self, health, info]
+            required: [_links]
             properties:
               _links:
                 type: object
+                required: [self, health, info]
                 properties:
                   self:
                     $ref: '#/definitions/IndexRefEntry'
@@ -38,7 +38,6 @@ paths:
   /info:
     get:
       tags: [actuator]
-      operationId: {{cookiecutter.project_slug}}.api.actuator.info.get
       responses:
         200:
           description: sehr informativ
@@ -67,7 +66,6 @@ paths:
   /health:
     get:
       tags: [actuator]
-      operationId: {{cookiecutter.project_slug}}.api.actuator.health.get
       summary: Returns the health of the API.
       externalDocs:
         description: Spring Actuator (Health)
@@ -93,8 +91,17 @@ paths:
           examples:
             application/json: { "status": 'OUT_OF_SERVICE' }
 
-# spring-music metrics
-# {"mem":529526,"mem.free":357970,"processors":4,"instance.uptime":203182,"uptime":208419,"systemload.average":0.52,"heap.committed":445440,"heap.init":96256,"heap.used":87469,"heap":1367552,"nonheap.committed":86528,"nonheap.init":2496,"nonheap.used":84086,"nonheap":0,"threads.peak":28,"threads.daemon":25,"threads.totalStarted":44,"threads":27,"classes":11567,"classes.loaded":11567,"classes.unloaded":0,"gc.ps_scavenge.count":10,"gc.ps_scavenge.time":87,"gc.ps_marksweep.count":3,"gc.ps_marksweep.time":137,"httpsessions.max":-1,"httpsessions.active":0,"datasource.primary.active":0,"datasource.primary.usage":0.0,"gauge.response.cloudfoundryapplication":10.0,"gauge.response.cloudfoundryapplication.env":13.0,"gauge.response.cloudfoundryapplication.health":30032.0,"gauge.response.cloudfoundryapplication.metrics":15.0,"gauge.response.cloudfoundryapplication.info":25.0,"gauge.response.cloudfoundryapplication.autoconfig":46.0,"counter.status.200.cloudfoundryapplication.metrics":1,"counter.status.200.cloudfoundryapplication.autoconfig":1,"counter.status.200.cloudfoundryapplication":5,"counter.status.200.cloudfoundryapplication.info":2,"counter.status.200.cloudfoundryapplication.health":4,"counter.status.200.cloudfoundryapplication.env":2}
+  /metrics:
+    get:
+      tags: [actuator]
+      responses:
+        200:
+          description: Metrics
+          schema:
+            $ref: '#/definitions/MetricsResponse'
+          examples:
+            # spring-music metrics
+            application/json: {"mem":529526,"mem.free":357970,"processors":4,"instance.uptime":203182,"uptime":208419,"systemload.average":0.52,"heap.committed":445440,"heap.init":96256,"heap.used":87469,"heap":1367552,"nonheap.committed":86528,"nonheap.init":2496,"nonheap.used":84086,"nonheap":0,"threads.peak":28,"threads.daemon":25,"threads.totalStarted":44,"threads":27,"classes":11567,"classes.loaded":11567,"classes.unloaded":0,"gc.ps_scavenge.count":10,"gc.ps_scavenge.time":87,"gc.ps_marksweep.count":3,"gc.ps_marksweep.time":137,"httpsessions.max":-1,"httpsessions.active":0,"datasource.primary.active":0,"datasource.primary.usage":0.0,"gauge.response.cloudfoundryapplication":10.0,"gauge.response.cloudfoundryapplication.env":13.0,"gauge.response.cloudfoundryapplication.health":30032.0,"gauge.response.cloudfoundryapplication.metrics":15.0,"gauge.response.cloudfoundryapplication.info":25.0,"gauge.response.cloudfoundryapplication.autoconfig":46.0,"counter.status.200.cloudfoundryapplication.metrics":1,"counter.status.200.cloudfoundryapplication.autoconfig":1,"counter.status.200.cloudfoundryapplication":5,"counter.status.200.cloudfoundryapplication.info":2,"counter.status.200.cloudfoundryapplication.health":4,"counter.status.200.cloudfoundryapplication.env":2}
 
 definitions:
   IndexRefEntry:
@@ -123,3 +130,8 @@ definitions:
         status:
           type: string
       additionalProperties: true
+
+  MetricsResponse:
+    type: object
+    additionalProperties:
+      type: number

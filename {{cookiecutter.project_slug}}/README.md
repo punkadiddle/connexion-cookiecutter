@@ -8,21 +8,21 @@ Go to [here](http://localhost:8080/api/v1/ui) to view the brilliant SwaggerUI do
 
 A simple non-api Web-Page is running at ```http://localhost:{{cookiecutter.api_port}}/hello```.
 
+
 ## Verwendung
 
 ### Installation
 
 Run ```make``` for a local setup and then ```make start_dev``` to start the API in debug mode.
 
-To start the uWSGI, run ```make start```
+To start the uWSGI, run ```make start_dev```
 
+### API
 
-### Procedure
-
-First, define your REST API in the configuration under ```/config/api.yml```, 
+First, define your REST API in the configuration under ```schema/app_v1.yml```, 
 then add the Python logic for the *operationId* under /{{cookiecutter.project_slug}}/api
 
-### Healthcheck
+### Monitoring
 
 Configure a health check under /api/v1/health (GET).
 
@@ -42,18 +42,15 @@ can hold a string defining the cause of a problem.
 
 `make build-and-push` Build Docker image and push to repository
 
+
 ## Deployment
 
 ## Cloud Foundry
 
-Der Service ist zum Deployment auf Cloud Foundry vorkonfiguriert. Deploymentprozedur:
+Der Service ist zum Deployment auf Cloud Foundry vorkonfiguriert: `make push`. 
 
- 1. Download der Abhängigkeiten: ``make vendor test``
- 2. Push ``cf push``
-
-
-Folgende Dateien konfigurieren das Buildpack:
-
+Folgende Dateien konfigurieren CF Push und das Buildpack:
+ * `.cfignore`
  * `manifest.yml`
  * `Procfile`
  * `runtime.txt`

@@ -1,11 +1,13 @@
 import logging
 from flask import request, current_app, url_for
+from werkzeug.routing import BuildError
 
 
 logger = logging.getLogger(__package__)
 
 
 def get():
+    """ Index der nachgelagerten Einträg erstellen """
     prefix = request.blueprint
 
     result = {}
@@ -16,9 +18,13 @@ def get():
                 name = rule.rule[len(prefix):].strip('/')
                 if not name:
                     name = 'self'
-                result[name] = { 'href': url_for(rule.endpoint, _external=True) }
+                elif '/' in name:
+                    continue
+                result[name] = {'href': url_for(rule.endpoint, _external=True)}
                 
-        except:
-            logger.exception("problem scanning rules")
+        except BuildError as ex:
+            # Die internen swagger_ui seiten werfen Fehler, die aber nicht relevant sind.
+            logger.debug("problem scanning rules", exc_info=ex)
         
-    return {'_links': result}
+    return {'_links': result}, 200
+    

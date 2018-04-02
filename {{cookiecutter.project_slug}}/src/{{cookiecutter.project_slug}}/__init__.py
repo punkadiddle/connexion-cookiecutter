@@ -1,15 +1,14 @@
 import connexion
-import json
 import pkg_resources
+import logging
 import yaml
 import os
 import sys
 from cfenv import AppEnv
 from flask import Config as FlaskConfig
-from prance import ResolvingParser
 
-import logging
 
+logger = logging.getLogger(__package__)
 
 try:
     # setuptools-scm generiert die Versionsnummer aus GIT-Metadaten
@@ -27,31 +26,54 @@ class LevelFilter(logging.Filter):
         return record.levelno < self.level
 
 
-def convertSettingValue(x):
-    if x == 'true':
-        return True
-    elif x == 'false':
-        return False
-    else:
-        return x
+def pasteToFlaskConfig(global_config, settings):
+    def __convVal(x):
+        if x == 'true':
+            return True
+        elif x == 'false':
+            return False
+        else:
+            return x
+
+    incfg = global_config.copy()
+    incfg.update(settings)
+
+    outcfg = dict(map(lambda x: (x[0][6:], __convVal(x[1])),
+                  filter(lambda x: x[0].startswith('flask.'), incfg.items())))
+    
+    return outcfg
 
 
 def cloudFoundryfyConfig(config: FlaskConfig):
     """ Optionale Anpassung der Flask-Konfiguration mit CF-Umgebung
     """
     cfenv = AppEnv()
-    print(cfenv)
+    if len(cfenv.app) > 0:
+        logger.info("app %s %d services: %s", cfenv.name, len(cfenv.services), cfenv.app)
+        for service in cfenv.services:
+            logger.info("bound service '%s': %s", service.name, service.env)
+
+        {% if cookiecutter.use_sql.startswith('y') -%}
+        vcapdb = cfenv.get_service(label='p-mysql')
+        if vcapdb:
+            logger.info("%s", vcapdb)
+            config['SQLALCHEMY_DATABASE_URI'] = 'mysql+{}://{username}:{password}@{hostname}:{port}/{name}'.format(
+                'mysqldb', **vcapdb.credentials)
+            logger.info("MySQL Service %s konfiguriert", vcapdb.credentials['hostname'])
+
+        elif 'SQLALCHEMY_DATABASE_URI' not in config:
+            logger.critical("Kein Datenbank-Service gebunden!")
+        {%- endif %}
+
+    else:
+        cfenv = None
+
+    return cfenv
 
 
-def main(global_config, **settings):
+def createApp(global_config, **settings):
     """ WSGI-Server erzeugen und konfigurieren.
     """
-
-    #engine = engine_from_config(settings, prefix='sqlalchemy.',
-    #                            connect_args={'check_same_thread':False},
-    #                            poolclass=StaticPool)
-    #DBSession.configure(bind=engine)
-    #Base.metadata.bind = engine
 
     # Ini-Konfiguration unterstüzt keine Filter, daher hier stderr-Ausgabe
     # auf Meldungen ab WARNING filtern.
@@ -64,15 +86,10 @@ def main(global_config, **settings):
         'product_version': __version__,
     }
 
-    # TODO: aus Beispielprojekt, obsolet?
-    #apiFile = pkg_resources.resource_stream(__name__, 'schema/swagger.yml')
-    #parsedDefinition = yaml.load(apiFile)
-    #swaggerDefiniton = ResolvingParser(spec_string=json.dumps(parsedDefinition)).specification
-
     # extrat all flask.* configuration items
-    flaskConfig = dict(map(lambda x: (x[0][6:], convertSettingValue(x[1])),
-                        filter(lambda x: x[0].startswith('flask.'), settings.items())))
+    flaskConfig = pasteToFlaskConfig(global_config, settings)
     DEBUG = flaskConfig.get('DEBUG', False)
+    VERBOSE = global_config.get('STARTUP_VERBOSE', 0)
 
     # create app instance
     connexionApp = connexion.App("{{cookiecutter.project_name}}", debug=DEBUG, swagger_ui=True)
@@ -82,28 +99,36 @@ def main(global_config, **settings):
     flaskApp.config.update(flaskConfig)
     cloudFoundryfyConfig(flaskApp.config)
     
+    # Rest-Endpoint CF Spring Actuator like Metadaten (Definition im sub-package api.actuator)
     apiFile = pkg_resources.resource_filename(__name__, 'schema/actuator.yml')
-    connexionApp.add_api(apiFile, strict_validation=False, validate_responses=True)
-    apiFile = pkg_resources.resource_filename(__name__, 'schema/swagger.yml')
-    connexionApp.add_api(apiFile, strict_validation=True, validate_responses=True)
+    connexionApp.add_api(apiFile, strict_validation=False, validate_responses=True,
+                         resolver=connexion.RestyResolver('%s.api.actuator' % (__package__)),
+                         base_path='/cloudfoundryapplication')
 
-    print(yaml.dump(flaskApp.config))
+    # Restendpoint App Version 1 (Definition im sub-package api)
+    apiFile = pkg_resources.resource_filename(__name__, 'schema/app_v1.yml')
+    connexionApp.add_api(apiFile, strict_validation=True, validate_responses=True,
+                         resolver=connexion.RestyResolver('%s.api' % (__package__)))
+
+    if VERBOSE > 0:
+        print(yaml.dump(flaskApp.config))
 
     if DEBUG:
         from flask_debugtoolbar import DebugToolbarExtension
         toolbar = DebugToolbarExtension()
         toolbar.init_app(flaskApp)
 
-    {% if cookiecutter.use_sql == 'yes' %}
-    from flask_sqlalchemy import SQLAlchemy
-    db = SQLAlchemy()
+    {% if cookiecutter.use_sql.startswith('y') %}
+    # proaktive Initialisierung der Datenbank (entfernen -> lazy)
+    from .model import getDb
+    with flaskApp.app_context():
+        db = getDb()
+    {% endif -%}
 
-    {% endif %}
-    {% if cookiecutter.use_ui == 'yes' %}
+    {% if cookiecutter.use_ui.startswith('y') %}
     # simple web-ui page without swagger
     from .ui.hello import helloPage
     flaskApp.register_blueprint(helloPage)
-
-    {% endif %}
+    {% endif -%}
 
     return flaskApp

@@ -6,15 +6,15 @@ Pipfile:
 	# Cloud Foundry Python Buildpack verwendet pipenv.
 	# Pipfile soll requirements.txt ablösen, ist aber noch instabil. Aktuell ist setup.cfg
 	# führend (https://github.com/pypa/pipfile).
-	pipenv --three install -e "${PWD}"
-	#python3 -m virtualenv --clear venv
-	#venv/bin/pip install -e .
-
+	unlink venv 2>/dev/null || :
+	pipenv --three install -e "$${PWD}"
+	# venv für Tools wie VSCode, Eclipse an Fixpunkt sichtbar machen
+	ln -sfnv "$$(pipenv --venv)" venv
 venv: Pipfile
 
 clean:
 	pipenv clean
-	rm -rfv bin develop-eggs dist downloads .eggs venv parts vendor
+	rm -rfv develop-eggs dist downloads .eggs venv parts vendor
 	rm -fv Pipfile Pipfile.lock
 	rm -fv .coverage .installed.cfg bootstrap.py requirements.txt 
 	rm -fv logs/*.txt

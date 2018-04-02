@@ -12,7 +12,6 @@
     "api_port": "8080",
     
     "use_sql": "no",
-
     "use_ui": "yes",
     
     "use_docker": "yes",

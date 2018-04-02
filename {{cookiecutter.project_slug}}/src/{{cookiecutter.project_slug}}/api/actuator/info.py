@@ -1,7 +1,7 @@
 from {{cookiecutter.project_slug}} import __version__ as appVersion
 
 
-def get():
+def search():
     return {
         "build": {
             "artifact": "",

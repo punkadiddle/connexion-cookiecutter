@@ -6,4 +6,7 @@ echo ">> Hello Post-Compile <<"
 env
 ls -al
 
+echo "Fixing egg-links:"
+find -L "$PYTHONPATH/lib" -type f -iregex '.*/site-packages/.*egg-link$' -print0 | xargs -0 --verbose -I{} sh -c 'echo "/home/vcap/app/src" > "$1"' -- {}
+
 exit 0

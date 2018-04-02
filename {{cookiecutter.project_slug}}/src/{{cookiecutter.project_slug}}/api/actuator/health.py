@@ -1,4 +1,4 @@
-def get():
+def search():
     """
     Returns
     -------

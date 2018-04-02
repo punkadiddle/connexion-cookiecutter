@@ -1,4 +1,6 @@
-# Stuff to not upload to CF (.gitignore format)
+#
+# Cloud Foundry Ignores (stuff to not upload to CF) in .gitignore format
+#
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
@@ -8,6 +10,10 @@ __pycache__/
 
 dist/
 build/
+
+# Verwendung von requirements statt Pipfile
+Pipfile
+Pipfile.lock
 
 Dockerfile
 .coverage

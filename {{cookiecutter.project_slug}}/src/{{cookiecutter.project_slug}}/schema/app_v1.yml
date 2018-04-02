@@ -1,17 +1,17 @@
 swagger: '2.0'
 info:
   title: "{{cookiecutter.project_name}}"
-  version: "{% raw %}{{product_version}}{% endraw %}"
+  version: "1"
 consumes:
   - application/json
 produces:
   - application/json
 basePath: /api/v1
+
 paths:
   /foo:
     post:
       tags: [Foo]
-      operationId: {{cookiecutter.project_slug}}.api.foo.post
       summary: Send some data formated as JSON to the server.
       parameters:
         - name: request
@@ -38,7 +38,6 @@ paths:
 
     get:
       tags: [Foo]
-      operationId: {{cookiecutter.project_slug}}.api.foo.get
       summary: Simply call an URL and retrieve a JSON data
       responses:
         "200":
@@ -54,7 +53,6 @@ paths:
   /complicated/complex:
     get:
       tags: [Complex]
-      operationId: {{cookiecutter.project_slug}}.api.complicated.complex.get
       summary: Returns a very complex JSON object
       responses:
         "200":
