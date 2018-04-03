@@ -1,38 +1,38 @@
-.PHONY: clean test start_dev
+.PHONY: clean update test run rundev vendor ssh push {% if cookiecutter.use_docker.startswith('y') %}build-docker start-docker attach-to-docker{% endif %}
 
-all: test
-
-Pipfile:
-	# Cloud Foundry Python Buildpack verwendet pipenv.
-	# Pipfile soll requirements.txt ablösen, ist aber noch instabil. Aktuell ist setup.cfg
-	# führend (https://github.com/pypa/pipfile).
-	unlink venv 2>/dev/null || :
-	pipenv --three install -e "$${PWD}"
-	# venv für Tools wie VSCode, Eclipse an Fixpunkt sichtbar machen
-	ln -sfnv "$$(pipenv --venv)" venv
-venv: Pipfile
+all: test startdev
 
 clean:
 	pipenv clean
 	rm -rfv develop-eggs dist downloads .eggs venv parts vendor
-	rm -fv Pipfile Pipfile.lock
 	rm -fv .coverage .installed.cfg bootstrap.py requirements.txt 
-	rm -fv logs/*.txt
 	find . -name '*.pyc' -or -name '*.pyo' -exec rm -fv {} \;
 	find . -type d -depth -name '*.egg-info' -or -name '__pycache__' -exec rm -rfv {} \;
 
-start: Pipfile
+Pipfile.lock:
+	PIPENV_VENV_IN_PROJECT=1 pipenv --three install --dev
+	pipenv install -e .
+
+venv: clean Pipfile.lock
+
+update: Pipfile
+	pipenv update
+
+test: Pipfile
+	pipenv run python setup.py pytest --addopts --cov={{cookiecutter.project_slug}}
+
+run: Pipfile
 	pipenv run gunicorn --paste production.ini
 
-start_dev: Pipfile
+rundev: Pipfile
 	pipenv run gunicorn --paste development.ini
 
 vendor:
 	# Speichert die aktuelle Konfiguration an Abhängigkeiten als requirements.txt
 	# und speichert alle Abhängigkeiten im Ordner vendor.
 	# -> Cloud Foundry Offline Deployment
-	pipenv run pip freeze --local
-	pipenv run pip download --dest vendor --no-binary :all: .
+	pipenv lock -r > requirements.txt
+	pipenv run pip download --dest vendor -r requirements.txt --no-binary :all: 
 
 push: vendor
 	cf push
@@ -42,7 +42,7 @@ ssh:
 	echo "Die Python-Umgebung an einem laufenden Prozess auslesen:"
 	echo "cat /proc/\\$(ps aux | grep gunicorn | grep -v grep | head -n1 | awk '{ print \\$2 }')/environ | tr \\\\0 \\\\n"
 	echo ""
-	cf ssh demo_ap
+	cf ssh {{cookiecutter.project_slug}}
 
 {% if cookiecutter.use_docker.startswith('y') -%}
 build-docker:
@@ -59,8 +59,3 @@ attach-to-docker:
 	 docker exec -i -t {{cookiecutter.project_slug}} /bin/bash 
 {%- endif %}
 	
-update: Pipfile
-	pipenv update
-
-test: Pipfile
-	pipenv run python setup.py pytest --addopts --cov={{cookiecutter.project_slug}}

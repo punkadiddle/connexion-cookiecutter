@@ -18,14 +18,6 @@ except pkg_resources.DistributionNotFound:
     __version__ = '0.0.0'
 
 
-class LevelFilter(logging.Filter):
-    def __init__(self, level):
-        self.level = level
-
-    def filter(self, record):
-        return record.levelno < self.level
-
-
 def pasteToFlaskConfig(global_config, settings):
     def __convVal(x):
         if x == 'true':
@@ -53,12 +45,12 @@ def cloudFoundryfyConfig(config: FlaskConfig):
         for service in cfenv.services:
             logger.info("bound service '%s': %s", service.name, service.env)
 
-        {% if cookiecutter.use_sql.startswith('y') -%}
+        {% if cookiecutter.use_reldb.startswith('y') -%}
         vcapdb = cfenv.get_service(label='p-mysql')
         if vcapdb:
             logger.info("%s", vcapdb)
-            config['SQLALCHEMY_DATABASE_URI'] = 'mysql+{}://{username}:{password}@{hostname}:{port}/{name}'.format(
-                'mysqldb', **vcapdb.credentials)
+            config['SQLALCHEMY_DATABASE_URI'] = 'mysql://{username}:{password}@{hostname}:{port}/{name}'.format(
+                **vcapdb.credentials)
             logger.info("MySQL Service %s konfiguriert", vcapdb.credentials['hostname'])
 
         elif 'SQLALCHEMY_DATABASE_URI' not in config:
@@ -74,13 +66,6 @@ def cloudFoundryfyConfig(config: FlaskConfig):
 def createApp(global_config, **settings):
     """ WSGI-Server erzeugen und konfigurieren.
     """
-
-    # Ini-Konfiguration unterstüzt keine Filter, daher hier stderr-Ausgabe
-    # auf Meldungen ab WARNING filtern.
-    for handler in logging.getLogger().handlers:
-        if handler.stream is sys.stderr:
-            handler.addFilter(LevelFilter(logging.WARNING))
-    
     appInfo = {
         'product_slug': __package__,
         'product_version': __version__,
@@ -118,7 +103,7 @@ def createApp(global_config, **settings):
         toolbar = DebugToolbarExtension()
         toolbar.init_app(flaskApp)
 
-    {% if cookiecutter.use_sql.startswith('y') %}
+    {% if cookiecutter.use_reldb.startswith('y') %}
     # proaktive Initialisierung der Datenbank (entfernen -> lazy)
     from .model import getDb
     with flaskApp.app_context():

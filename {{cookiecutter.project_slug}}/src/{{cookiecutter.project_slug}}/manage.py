@@ -31,7 +31,7 @@ def main():
         # Flask Scripting konfigurieren
         manager = Manager(app)
 
-        {% if cookiecutter.use_sql.startswith('y') %}
+        {% if cookiecutter.use_reldb.startswith('y') %}
         from flask_migrate import MigrateCommand
         manager.add_command('db', MigrateCommand)
         {% endif -%}

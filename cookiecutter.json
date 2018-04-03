@@ -5,13 +5,13 @@
     "username_slug": "{{ cookiecutter.username.lower().replace(' ', '_') }}",
 
     "project_name": "Demo API",
-    "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '') }}",
+    "project_slug": "demos.flask_apifirst",
     "project_description": "RESTful APIs with Connexion + Flask + gUnicorn",
     
     "license": ["Not open source", "MIT license", "BSD license", "ISC license", "Apache Software License 2.0", "GNU General Public License v3"],
     "api_port": "8080",
     
-    "use_sql": "no",
+    "use_reldb": "no",
     "use_ui": "yes",
     
     "use_docker": "yes",
