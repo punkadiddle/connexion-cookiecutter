@@ -1,25 +1,61 @@
-.PHONY: clean start {% if cookiecutter.use_docker.startswith('y') %}build-docker build-and-push start-docker attach-to-docker{% endif %}
+PROJECT_SLUG={{cookiecutter.project_slug}}
 
-all: venv/bin/python
+.PHONY: clean delete update test run rundev ssh push 
 
-venv/bin/python:
-	python3 -m virtualenv venv
-	venv/bin/pip -e .
+# install pipenv to create .venv directory
+.venv: Pipfile
+	PIPENV_VENV_IN_PROJECT=1 pipenv --three install --dev
+
+# change in Pipfile requires to rebuild Pipfile.lock
+Pipfile.lock: .venv Pipfile
+	pipenv update
+
+requirements.txt: Pipfile.lock
+	# Speichert die aktuelle Konfiguration an Abhängigkeiten als requirements.txt
+	# und speichert alle Abhängigkeiten im Ordner vendor.
+	# -> Cloud Foundry Offline Deployment
+	pipenv lock -r > requirements.txt
+	# lokales Paket nicht nochmal packen...
+	grep -v '^-e' requirements.txt > requirements-vendor.txt
+	pipenv run pip download --dest vendor -r requirements-vendor.txt --no-binary :all: 
+	rm requirements-vendor.txt
+
+all: Pipfile.lock
 
 clean:
-	rm -rfv bin develop-eggs dist downloads .eggs venv parts
-	rm -fv .coverage .installed.cfg bootstrap.py
-	rm -fv logs/*.txt
-	find . -name '*.pyc' -exec rm -fv {} \;
-	find . -name '*.pyo' -exec rm -fv {} \;
-	find . -depth -name '*.egg-info' -exec rm -rfv {} \;
-	find . -depth -name '__pycache__' -exec rm -rfv {} \;
+	rm -rfv develop-eggs dist downloads .eggs .venv parts vendor
+	rm -fv .coverage .installed.cfg bootstrap.py requirements.txt
+	find . -name '*.pyc' -or -name '*.pyo' -exec rm -fv {} \;
+	find . -type d -depth -name '*.egg-info' -or -name '__pycache__' -exec rm -rfv {} \;
 
-start: venv/bin/python
-	venv/bin/gunicorn --paste development.ini
+install: .venv
 
-vendor:
-	venv/bin/pip install --download vendor --no-binary :all:
+update: Pipfile.lock
+
+test: Pipfile.lock
+	pipenv run python setup.py pytest --addopts --cov=$(PROJECT_SLUG)
+
+run: Pipfile.lock
+	pipenv run gunicorn --paste production.ini
+
+rundev: Pipfile.lock
+	pipenv run gunicorn --paste development.ini
+
+push: requirements.txt
+	cf push
+
+restage: requirements.txt
+	cf restage $(PROJECT_SLUG)
+
+delete:
+	cf delete $(PROJECT_SLUG) -f
+
+ssh:
+	echo "SSH funktioniert nur, während der Container läuft."
+	echo "Die Python-Umgebung an einem laufenden Prozess auslesen:"
+	echo "cat /proc/\\$(ps aux | egrep '(python|gunicorn)' | grep -v grep | head -n1 | awk '{ print \\$2 }')/environ | tr \\\\0 \\\\n"
+	echo ""
+	cf ssh $(PROJECT_SLUG)
 
 {% if cookiecutter.use_docker.startswith('y') -%}
 build-docker:
@@ -29,16 +65,9 @@ build-and-push: build-docker
 	docker push {{cookiecutter.docker_repository}}{{'/' if cookiecutter.docker_repository else ''}}{{cookiecutter.docker_project_name}}:{{cookiecutter.docker_default_tag}}
 
 start-docker:
-	docker rm {{cookiecutter.project_slug}} || true
-	docker run --name "{{cookiecutter.project_slug}}" -p "127.0.0.1:{{cookiecutter.api_port}}:{{cookiecutter.api_port}}" {{cookiecutter.docker_repository}}{{'/' if cookiecutter.docker_repository else ''}}{{cookiecutter.docker_project_name}}:{{cookiecutter.docker_default_tag}}
+	docker rm "$(PROJECT_SLUG)" || true
+	docker run --name "$(PROJECT_SLUG)" -p "127.0.0.1:{{cookiecutter.api_port}}:{{cookiecutter.api_port}}" {{cookiecutter.docker_repository}}{{'/' if cookiecutter.docker_repository else ''}}{{cookiecutter.docker_project_name}}:{{cookiecutter.docker_default_tag}}
 
 attach-to-docker:
-	 docker exec -i -t {{cookiecutter.project_slug}} /bin/bash 
-{%- endif -%}
-
-update-all-packages: venv/bin/python
-	 env/bin/pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 env/bin/pip install -U
-
-test: venv/bin/python
-	venv/bin/python setup.py pytest --addopts --cov={{cookiecutter.project_slug}}
-	
+	 docker exec -i -t $(PROJECT_SLUG) /bin/bash 
+{%- endif %}

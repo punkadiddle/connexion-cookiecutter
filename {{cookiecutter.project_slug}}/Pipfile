@@ -1,0 +1,55 @@
+#
+# https://github.com/pypa/pipfile
+
+[dev-packages]
+pytest-runner = "*"
+setuptools_scm = "*"
+
+sphinx = "*"
+
+pytest = "*"
+pytest-cov = "*"
+# Linter u.a. für VSCode
+pydocstyle = "*"
+flake8 = "*"
+
+[packages]
+# Web Framework = "*"
+flask = "*"
+flask-debugtoolbar = "*"
+flask-script = "*"
+connexion = "*"
+prance = "*"
+werkzeug = "*"
+
+{%- if cookiecutter.use_reldb.startswith('y') %}
+# Database
+flask_sqlalchemy = "*"
+flask-migrate = "*"
+mysqlclient = "*"
+{%- endif %}
+
+{%- if cookiecutter.use_ui.startswith('y') %}
+# UI
+Jinja2 = "*"
+{% endif -%}
+
+# Web App-Server
+gunicorn = "*"
+plaster_pastedeploy = "*"
+
+# Cloud Support
+cfenv = "*"
+redis = "*"
+
+# Monitoring
+psutil = "*"
+
+# Basics
+PyYAML = "*"
+
+# Python 3.6 type hints
+typing = {version=">=3.6.1", markers="python_version < '3.6'"}
+
+# This appliation
+"{{cookiecutter.project_slug}}" = {path = ".", editable = true}

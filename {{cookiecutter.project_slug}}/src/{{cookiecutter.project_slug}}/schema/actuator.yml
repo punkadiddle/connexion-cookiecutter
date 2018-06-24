@@ -1,0 +1,137 @@
+swagger: '2.0'
+info:
+  title: Spring Boot Actuators for Cloud Foundry
+  description: Try at creating a minimalist Cloud Foundry compabitle application description.
+  version: "0.1"
+consumes:
+  - application/json
+produces:
+  - application/json
+
+basePath: /
+paths:
+  /:
+    get:
+      responses:
+        200:
+          description: Actuator Index
+          examples:
+            # spring-music
+            application/json: {"_links":{"self":{"href":"http://localhost:8080/cloudfoundryapplication"},"auditevents":{"href":"http://localhost:8080/cloudfoundryapplication/auditevents"},"autoconfig":{"href":"http://localhost:8080/cloudfoundryapplication/autoconfig"},"trace":{"href":"http://localhost:8080/cloudfoundryapplication/trace"},"mappings":{"href":"http://localhost:8080/cloudfoundryapplication/mappings"},"metrics":{"href":"http://localhost:8080/cloudfoundryapplication/metrics"},"info":{"href":"http://localhost:8080/cloudfoundryapplication/info"},"beans":{"href":"http://localhost:8080/cloudfoundryapplication/beans"},"loggers":{"href":"http://localhost:8080/cloudfoundryapplication/loggers"},"dump":{"href":"http://localhost:8080/cloudfoundryapplication/dump"},"health":{"href":"http://localhost:8080/cloudfoundryapplication/health"},"heapdump":{"href":"http://localhost:8080/cloudfoundryapplication/heapdump"},"env":{"href":"http://localhost:8080/cloudfoundryapplication/env"},"configprops":{"href":"http://localhost:8080/cloudfoundryapplication/configprops"}}}
+          schema:
+            type: object
+            required: [_links]
+            properties:
+              _links:
+                type: object
+                required: [self, health, info]
+                properties:
+                  self:
+                    $ref: '#/definitions/IndexRefEntry'
+                  health:
+                    $ref: '#/definitions/IndexRefEntry'
+                  info:
+                    $ref: '#/definitions/IndexRefEntry'
+                additionalProperties:
+                  $ref: '#/definitions/IndexRefEntry'
+
+  /info:
+    get:
+      tags: [actuator]
+      responses:
+        200:
+          description: sehr informativ
+          schema:
+            type: object
+            properties:
+              build:
+                default: string
+                properties:
+                  version:
+                    description: Version
+                  artifact:
+                    description: Artifact
+                  name:
+                    description: Name
+                  group:
+                    description: Group
+                  time:
+                    description: Build Zeitstempel (ms seit Unix)
+                    type: integer
+                additionalProperties: true
+            additionalProperties:
+              type: object
+              additionalProperties: true
+            
+  /health:
+    get:
+      tags: [actuator]
+      summary: Returns the health of the API.
+      externalDocs:
+        description: Spring Actuator (Health)
+        url: https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready-health
+      responses:
+        200:
+          description: Service funktioniert einwanfrei (oder Zustand noch nicht bekannt).
+          schema:
+            $ref: '#/definitions/HealthResponse'
+          examples:
+            # spring-music health
+            application/json: {"status":"UP","diskSpace":{"status":"UP","total":38161678336,"free":19517390848,"threshold":10485760},"db":{"status":"UP","database":"H2","hello":1}}
+        424:
+          description: Some dependecies are unavailable and limit this services availability.
+          schema:
+            $ref: '#/definitions/HealthResponse'
+          examples:
+            application/json: { "status": "LIMITED_SERVICE" }
+        503:
+          description: The API is broken.
+          schema:
+            $ref: '#/definitions/HealthResponse'
+          examples:
+            application/json: { "status": 'OUT_OF_SERVICE' }
+
+  /metrics:
+    get:
+      tags: [actuator]
+      responses:
+        200:
+          description: Metrics
+          schema:
+            $ref: '#/definitions/MetricsResponse'
+          examples:
+            # spring-music metrics
+            application/json: {"mem":529526,"mem.free":357970,"processors":4,"instance.uptime":203182,"uptime":208419,"systemload.average":0.52,"heap.committed":445440,"heap.init":96256,"heap.used":87469,"heap":1367552,"nonheap.committed":86528,"nonheap.init":2496,"nonheap.used":84086,"nonheap":0,"threads.peak":28,"threads.daemon":25,"threads.totalStarted":44,"threads":27,"classes":11567,"classes.loaded":11567,"classes.unloaded":0,"gc.ps_scavenge.count":10,"gc.ps_scavenge.time":87,"gc.ps_marksweep.count":3,"gc.ps_marksweep.time":137,"httpsessions.max":-1,"httpsessions.active":0,"datasource.primary.active":0,"datasource.primary.usage":0.0,"gauge.response.cloudfoundryapplication":10.0,"gauge.response.cloudfoundryapplication.env":13.0,"gauge.response.cloudfoundryapplication.health":30032.0,"gauge.response.cloudfoundryapplication.metrics":15.0,"gauge.response.cloudfoundryapplication.info":25.0,"gauge.response.cloudfoundryapplication.autoconfig":46.0,"counter.status.200.cloudfoundryapplication.metrics":1,"counter.status.200.cloudfoundryapplication.autoconfig":1,"counter.status.200.cloudfoundryapplication":5,"counter.status.200.cloudfoundryapplication.info":2,"counter.status.200.cloudfoundryapplication.health":4,"counter.status.200.cloudfoundryapplication.env":2}
+
+definitions:
+  IndexRefEntry:
+    type: object
+    properties:
+      href:
+        type: string
+
+  HealthResponse:
+    type: object
+    required:
+      - status
+    properties:
+      status:
+        type: string
+        description: Status of the service.
+        enum: ["DOWN", "OUT_OF_SERVICE", "LIMITED_SERVICE", "UNKNOWN", "UP"]
+      message:
+        type: string
+        description: The error message.
+        example: Could not load something.
+    additionalProperties:
+      description: Health-Informationen verwendeter Services.
+      type: object
+      properties:
+        status:
+          type: string
+      additionalProperties: true
+
+  MetricsResponse:
+    type: object
+    additionalProperties:
+      type: number

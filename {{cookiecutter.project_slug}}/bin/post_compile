@@ -1,0 +1,16 @@
+#!/bin/bash
+# Cloud-Foundry Python-Buildpack post-compile Hook
+# wird nach der Installation des Pakets ausgeführt.
+
+echo ">=== Post-Compile Environment ==============================================="
+env
+echo "============================================================================<"
+echo ""
+
+echo ">=== Fixing egg-links ======================================================="
+find -L "$PYTHONPATH/lib" -type f -iregex '.*/site-packages/.*egg-link$' -print0 | xargs -0 --verbose -I{} sh -c 'echo "/home/vcap/app/src" > "$1"' -- {}
+[[ $? -eq 0 ]] || echo "none to fix"
+echo "============================================================================<"
+echo ""
+
+exit 0

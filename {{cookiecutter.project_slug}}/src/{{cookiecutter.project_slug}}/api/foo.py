@@ -10,5 +10,5 @@ def post(request):
     }, 200
 
 
-def get():
+def search():
     return {"bar": True}, 200

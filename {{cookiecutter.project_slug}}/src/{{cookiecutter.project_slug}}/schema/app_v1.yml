@@ -1,17 +1,17 @@
 swagger: '2.0'
 info:
   title: "{{cookiecutter.project_name}}"
-  version: "{{cookiecutter.version}}"
+  version: "1"
 consumes:
   - application/json
 produces:
   - application/json
 basePath: /api/v1
+
 paths:
   /foo:
     post:
       tags: [Foo]
-      operationId: {{cookiecutter.project_slug}}.api.foo.post
       summary: Send some data formated as JSON to the server.
       parameters:
         - name: request
@@ -38,7 +38,6 @@ paths:
 
     get:
       tags: [Foo]
-      operationId: {{cookiecutter.project_slug}}.api.foo.get
       summary: Simply call an URL and retrieve a JSON data
       responses:
         "200":
@@ -54,32 +53,12 @@ paths:
   /complicated/complex:
     get:
       tags: [Complex]
-      operationId: {{cookiecutter.project_slug}}.api.complicated.complex.get
       summary: Returns a very complex JSON object
       responses:
         "200":
           description: Returns a complex JSON to show how to define a schema with different data types etc.
           schema:
             $ref: '#/definitions/ComplexResponse'
-
-  /health:
-    get:
-      tags: [Healthcheck]
-      operationId: {{cookiecutter.project_slug}}.api.health.get
-      summary: Returns the health of the API.
-      responses:
-        "200":
-          description: Everything is fine.
-          schema:
-            $ref: 'https://s3.amazonaws.com/sengiai-swagger/general/health.json#/Health'
-        "424":
-          description: A dependency is not working.
-          schema:
-            $ref: 'https://s3.amazonaws.com/sengiai-swagger/general/health.json#/Health'
-        "503":
-          description: The API is broken.
-          schema:
-            $ref: 'https://s3.amazonaws.com/sengiai-swagger/general/health.json#/Health'
 
 definitions:
   ComplexResponse:

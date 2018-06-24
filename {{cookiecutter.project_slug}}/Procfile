@@ -1,0 +1,9 @@
+#
+# Cloud Foundry Starter
+#
+
+# minimal dummy application to keep container running when debugging
+# set manifest.yml healthcheck to port!
+#web: python crashtestdummy.py $PORT
+
+web: gunicorn --paste $PASTEDEPLOY_CONFIG --bind :$PORT

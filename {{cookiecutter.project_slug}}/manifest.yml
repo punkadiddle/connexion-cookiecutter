@@ -1,6 +1,18 @@
 ---
-# Cloud Foundry Manifest for Python Buildpack 
+# Cloud Foundry Manifest
+# https://docs.pivotal.io/pivotalcf/2-1/devguide/deploy-apps/manifest.html
 applications:
-- name: {{cookiecutter.project_slug}}:
+- name: {{cookiecutter.project_slug}}
+  buildpack: python_buildpack
   memory: 128M
-  command: gunicorn --paste development.ini --bind "localhost:$VCAP_APP_PORT"
+
+  # for crashtestdummy: fallback to port healthcheck
+  #health-check-type: port
+  health-check-type: http
+  health-check-http-endpoint: /cloudfoundryapplication/health
+  
+  # future version instead of Profile:
+  #command: gunicorn --paste $PASTEDEPLOY_CONFIG --bind :$PORT
+  
+  env:
+    PASTEDEPLOY_CONFIG: development.ini

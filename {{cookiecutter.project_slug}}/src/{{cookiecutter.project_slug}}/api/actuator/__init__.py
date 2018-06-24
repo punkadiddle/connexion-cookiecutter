@@ -21,9 +21,10 @@ def get():
                 elif '/' in name:
                     continue
                 result[name] = {'href': url_for(rule.endpoint, _external=True)}
-
+                
         except BuildError as ex:
             # Die internen swagger_ui seiten werfen Fehler, die aber nicht relevant sind.
             logger.debug("problem scanning rules", exc_info=ex)
-
+        
     return {'_links': result}, 200
+    

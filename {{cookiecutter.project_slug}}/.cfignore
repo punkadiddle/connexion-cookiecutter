@@ -1,0 +1,29 @@
+#
+# Cloud Foundry Ignores (stuff to not upload to CF) in .gitignore format
+#
+
+### Python ###
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+dist/
+build/
+
+# use requirements.txt instead Pipfile
+#Pipfile*
+
+# use Pipfile instead requirements.txt
+requirements.txt
+
+Dockerfile
+.coverage
+.dockerignore
+.eggs
+.project/
+.pytest_cache
+.pydevproject
+.venv
+.vscode/
+venv

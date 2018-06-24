@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.python.pydev.debug.regularLaunchConfigurationType">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/{{cookiecutter.project_slug}}/venv/bin/gunicorn"/>
+<listEntry value="/{{cookiecutter.project_slug}}/.venv/bin/gunicorn"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
 </listAttribute>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${workspace_loc:{{cookiecutter.project_slug}}/venv/bin/gunicorn}"/>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_OTHER_WORKING_DIRECTORY" value="${workspace_loc:{{cookiecutter.project_slug}}/venv/bin}"/>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="--paste development.ini"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${workspace_loc:{{cookiecutter.project_slug}}/venv/.bin/gunicorn}"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_OTHER_WORKING_DIRECTORY" value="${workspace_loc:{{cookiecutter.project_slug}}/.venv/bin}"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="--paste development.ini --timeout 600"/>
 <stringAttribute key="org.python.pydev.debug.ATTR_INTERPRETER" value="__default"/>
 <stringAttribute key="org.python.pydev.debug.ATTR_PROJECT" value="{{cookiecutter.project_slug}}"/>
 <intAttribute key="org.python.pydev.debug.ATTR_RESOURCE_TYPE" value="1"/>

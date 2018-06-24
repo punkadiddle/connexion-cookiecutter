@@ -1,0 +1,8 @@
+#!/bin/bash
+# Cloud-Foundry Python-Buildpack pre-compile Hook
+# wird vor der Installation des Pakets ausgeführt.
+
+#echo ">=== Pre-Compile ============================================================"
+#echo "============================================================================<"
+
+exit 0
