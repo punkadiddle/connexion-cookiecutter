@@ -1,9 +1,9 @@
 #!/bin/bash
 BASE_DIR="${PWD}"
-CHECKOUT_FOLDER='project-git'
+CHECKOUT_DIR='project-git'
 DIST_DIR='project-dist'
 VERSION="$(cat "${BASE_DIR}/version/version")"
-source "${CHECKOUT_FOLDER}/ci/common/scripts/lib.sh"
+source "${CHECKOUT_DIR}/ci/common/scripts/lib.sh"
 
 export PIP_CACHE_DIR="${PWD}/pip-cache"
 #export PIPENV_CACHE_DIR="${PWD}/pip-cache"
@@ -14,7 +14,7 @@ export SETUPTOOLS_SCM_PRETEND_VERSION
 # inject version since it is not published to git yet
 SETUPTOOLS_SCM_PRETEND_VERSION=$(tr -d '-' <<< "${VERSION}")
 
-cd "${CHECKOUT_FOLDER}" || exit 1
+cd "${CHECKOUT_DIR}" || exit 1
 
 python -m pip install setuptools wheel || exit 1
 

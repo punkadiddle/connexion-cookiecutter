@@ -1,9 +1,9 @@
 #!/bin/bash
 BASE_DIR="${PWD}"
-CHECKOUT_FOLDER='project-git'
+CHECKOUT_DIR='project-git'
 DIST_DIR='project-dist'
 VERSION="$(cat "${BASE_DIR}/version/version")"
-source "${CHECKOUT_FOLDER}/ci/common/scripts/lib.sh"
+source "${CHECKOUT_DIR}/ci/common/scripts/lib.sh"
 
 export PIP_CACHE_DIR="${PWD}/pip-cache"
 export TWINE_REPOSITORY_URL

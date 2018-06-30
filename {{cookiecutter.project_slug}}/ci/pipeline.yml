@@ -151,7 +151,7 @@ jobs:
       trigger: true
     - get: python-rootfs
 
-  - task: build-package
+  - task: prepare-cf-deployment
     image: python-rootfs
     file: project-git/ci/common/tasks/python-prep-push.yml
 

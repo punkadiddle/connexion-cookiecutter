@@ -30,4 +30,5 @@ Dockerfile
 .git/
 .pytest_cache/
 .scannerwork/
+sonar-project.properties
 .venv/

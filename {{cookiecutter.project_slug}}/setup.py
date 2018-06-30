@@ -5,9 +5,16 @@ import subprocess
 from setuptools import setup
 
 
+versionFile = os.environ.get('VERSION_FILE', '.version')
+if not os.path.isabs(versionFile) and not os.path.exists(versionFile):
+    versionFile = os.path.join(os.environ['HOME'], versionFile)
+
 args = {}
 
-if os.path.isdir('.git'):
+if os.environ.get('SETUPTOOLS_SCM_PRETEND_VERSION', None):
+    args['version'] = os.environ['SETUPTOOLS_SCM_PRETEND_VERSION']
+
+elif os.path.isdir('.git'):
     result = subprocess.run(['git', 'describe', '--tags', '--match', 'v*', '--dirty'], stdout=subprocess.PIPE)
     if result.returncode == 0:
         version = result.stdout.decode("utf-8").splitlines()[0]
