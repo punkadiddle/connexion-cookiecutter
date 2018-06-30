@@ -157,8 +157,8 @@ jobs:
 
   - put: cf-deployment
     params:
-      manifest: project-git/manifest.yml
-      path: project-git
+      manifest: project-dist/manifest.yml
+      path: project-dist
 
 # ----------------------------------------------------------------------------
 # Versioning

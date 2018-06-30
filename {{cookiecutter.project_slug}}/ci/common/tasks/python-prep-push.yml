@@ -7,17 +7,10 @@ image_resource:
 
 inputs:
   - name: project-git
-  - name: project-dist
   - name: version
 
-caches:
-  - path: pip-cache
-
-params:
-  REPOSITORY_URL:
-  REPOSITORY_USERNAME:
-  REPOSITORY_PASSWORD:
-  DIST_FILE_GLOB:
+outputs:
+  - name: project-dist
 
 run:
-  path: project-git/ci/common/tasks/python-upload.sh
+  path: project-git/ci/common/tasks/python-prep-push.sh
