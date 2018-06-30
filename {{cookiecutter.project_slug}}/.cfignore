@@ -11,6 +11,12 @@ __pycache__/
 dist/
 build/
 
+# Editors
+*.launch
+.project
+.pydevproject
+.vscode/
+
 # use requirements.txt instead Pipfile
 #Pipfile*
 
@@ -20,10 +26,8 @@ requirements.txt
 Dockerfile
 .coverage
 .dockerignore
-.eggs
-.project/
-.pytest_cache
-.pydevproject
-.venv
-.vscode/
-venv
+.eggs/
+.git/
+.pytest_cache/
+.scannerwork/
+.venv/
