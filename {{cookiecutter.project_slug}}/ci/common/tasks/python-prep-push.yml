@@ -1,0 +1,23 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: python
+
+inputs:
+  - name: project-git
+  - name: project-dist
+  - name: version
+
+caches:
+  - path: pip-cache
+
+params:
+  REPOSITORY_URL:
+  REPOSITORY_USERNAME:
+  REPOSITORY_PASSWORD:
+  DIST_FILE_GLOB:
+
+run:
+  path: project-git/ci/common/tasks/python-upload.sh

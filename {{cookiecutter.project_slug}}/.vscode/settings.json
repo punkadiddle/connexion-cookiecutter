@@ -9,7 +9,8 @@
 
   // Arguments passed in. Each argument is a separate item in the array.
   "python.linting.flake8Args": [
-    "--max-line-length=120"
+    "--max-line-length=120",
+    "--ignore=W293"
   ],
 
   // Whether to lint Python files using pydocstyle

@@ -17,6 +17,11 @@ except pkg_resources.DistributionNotFound:
     # package ist nicht installiert
     __version__ = '0.0.0'
 
+appInfo = {
+    'product_slug': __package__,
+    'product_version': __version__,
+}
+
 
 def pasteToFlaskConfig(global_config, settings):
     def __convVal(x):
@@ -37,8 +42,8 @@ def pasteToFlaskConfig(global_config, settings):
 
 
 def cloudFoundryfyConfig(config: FlaskConfig):
-    """ Optionale Anpassung der Flask-Konfiguration mit CF-Umgebung
-    """
+    """ Optionale Anpassung der Flask-Konfiguration mit CF-Umgebung. """
+
     cfenv = AppEnv()
     if len(cfenv.app) > 0:
         logger.info("app %s %d services: %s", cfenv.name, len(cfenv.services), cfenv.app)
@@ -55,7 +60,7 @@ def cloudFoundryfyConfig(config: FlaskConfig):
 
         elif 'SQLALCHEMY_DATABASE_URI' not in config:
             logger.critical("Kein Datenbank-Service gebunden!")
-        {%- endif %}
+        {%- endif -%}
 
     else:
         cfenv = None
@@ -64,12 +69,7 @@ def cloudFoundryfyConfig(config: FlaskConfig):
 
 
 def main(global_config, **settings):
-    """ WSGI-Server erzeugen und konfigurieren.
-    """
-    appInfo = {
-        'product_slug': __package__,
-        'product_version': __version__,
-    }
+    """ WSGI-Server erzeugen und konfigurieren. """
 
     # extrat all flask.* configuration items
     flaskConfig = pasteToFlaskConfig(global_config, settings)
@@ -108,12 +108,12 @@ def main(global_config, **settings):
     from .model import getDb
     with flaskApp.app_context():
         db = getDb()
-    {% endif -%}
+    {%- endif -%}
 
     {% if cookiecutter.use_ui.startswith('y') %}
     # simple web-ui page without swagger
     from .ui.hello import helloPage
     flaskApp.register_blueprint(helloPage)
-    {% endif -%}
+    {%- endif -%}
 
     return flaskApp

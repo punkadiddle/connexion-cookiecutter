@@ -5,9 +5,17 @@
     "username_slug": "{{ cookiecutter.username.lower().replace(' ', '_') }}",
 
     "project_name": "Demo API",
+    "project_group": "demos",
     "project_slug": "demos_flask_apifirst",
     "project_description": "RESTful APIs with Connexion + Flask + gUnicorn",
+
+    "ci_url": "http://localhost:8080",
+    "ci_target": "local",
+    "ci_team": "main",
     
+    "git": "ssh://git@192.168.1.50:8122/{{ cookiecutter.project_group }}/{{ cookiecutter.project_slug }}.git",
+    "git_web": "http://192.168.1.50:8180/{{ cookiecutter.project_group }}/{{ cookiecutter.project_slug }}",
+
     "license": ["Not open source", "MIT license", "BSD license", "ISC license", "Apache Software License 2.0", "GNU General Public License v3"],
     "api_port": "8080",
     

@@ -1,6 +1,6 @@
 PROJECT_SLUG={{cookiecutter.project_slug}}
 
-.PHONY: clean delete update test run rundev ssh push 
+.PHONY: clean delete pipeline push run rundev ssh sonarqube test update
 
 # install pipenv to create .venv directory
 .venv: Pipfile
@@ -24,7 +24,7 @@ all: Pipfile.lock
 
 clean:
 	rm -rfv develop-eggs dist downloads .eggs .venv parts vendor
-	rm -fv .coverage .installed.cfg bootstrap.py requirements.txt
+	rm -fv .coverage .installed.cfg bootstrap.py requirements.txt test-coverage.xml test-report.xml pylint-report.txt
 	find . -name '*.pyc' -or -name '*.pyo' -exec rm -fv {} \;
 	find . -type d -depth -name '*.egg-info' -or -name '__pycache__' -exec rm -rfv {} \;
 
@@ -49,6 +49,16 @@ restage: requirements.txt
 
 delete:
 	cf delete $(PROJECT_SLUG) -f
+
+pipeline:
+	fly -t local set-pipeline --non-interactive --pipeline "$(PROJECT_SLUG)" \
+		--config=ci/pipeline.yml \
+		--load-vars-from=ci/common/params.yml \
+		--load-vars-from=ci/project-params.yml
+
+sonarqube: test
+	pipenv run pylint --output-format text --msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' src | tee pylint-report.txt
+	sonar-scanner
 
 ssh:
 	echo "SSH funktioniert nur, während der Container läuft."

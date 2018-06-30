@@ -1,0 +1,19 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: python
+
+inputs:
+  - name: project-git
+  - name: version
+
+outputs:
+  - name: sonarqube-scanner-input
+
+caches:
+  - path: pip-cache
+
+run:
+  path: project-git/ci/common/tasks/python-test.sh

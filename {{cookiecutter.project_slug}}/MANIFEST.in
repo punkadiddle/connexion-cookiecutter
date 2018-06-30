@@ -1,1 +1,13 @@
+recursive-include bin *
+recursive-include config *
 recursive-include static *
+recursive-include tests *
+include *.ini
+include *.py
+include .cfignore
+include Procfile
+include manifest.yml
+include runtime.txt
+include Pipfile*
+
+exclude vendor

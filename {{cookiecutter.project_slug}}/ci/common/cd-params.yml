@@ -1,0 +1,11 @@
+cf_endpoint: https://api.run.pivotal.io
+cf_org: 
+cf_space: 
+cf_user: 
+cf_passwd: 
+
+version_git: 
+version_git_branch: dev
+
+# must be able to read+tag project_git and read+write version_git
+git_key: 

@@ -1,0 +1,201 @@
+---
+# Generic Pipeline to build a Python project using pipenv
+# and sonarqube.
+
+resource_types:
+  # https://github.com/cathive/concourse-sonarqube-resource
+  - name: sonar-runner
+    type: docker-image
+    source:
+      repository: cathive/concourse-sonarqube-resource
+      tag: 0.6.0
+
+  # https://github.com/cf-platform-eng/concourse-pypi-resource
+  - name: pypi
+    type: docker-image
+    source:
+      repository: cfplatformeng/concourse-pypi-resource
+
+resources:
+  - name: python-rootfs
+    type: docker-image
+    source:
+      repository: python
+      tag: {{python_version}}
+
+  - name: project-git
+    type: git
+    source: 
+      uri: {{project_git}}
+      private_key: {{git_key}}
+      branch: {{project_git_branch}}
+
+  - name: version
+    type: semver
+    source:
+      driver: git
+      uri: {{version_git}}
+      branch: {{version_git_branch}}
+      file: {{project_slug}}
+      private_key: {{git_key}}
+
+  - name: code-analysis
+    type: sonar-runner
+    source:
+      host_url: {{sonarqube_url}}
+      login: {{sonarqube_token}}
+
+  - name: cf-deployment
+    type: cf
+    source:
+      api: {{cf_endpoint}}
+      username: {{cf_user}}
+      password: {{cf_passwd}}
+      organization: {{cf_org}}
+      space: {{cf_space}}
+      skip_cert_check: false
+
+ # TODO: resource for publishing to pypi repo
+  # - name: pypi-package
+  #   type: pypi
+  #   source:
+  #     name: {{project_slug}}
+  #     username: user
+  #     password: pass
+  #     python_version: source
+  
+
+groups:
+- name: build
+  jobs: [unit-test, quality-gate, deploy-package, deploy-app]
+- name: versioning
+  jobs: [manual-bump-major, manual-bump-minor, bump-patch, ship-current-rc]
+
+
+jobs:
+- name: 'unit-test'
+  serial_groups: [version-modifying]
+  plan:
+    - aggregate:
+      - get: project-git
+        params: {submodules: all}
+        trigger: true
+      - get: version
+        params: {pre: rc} # new build sees next pre-release version
+      - get: python-rootfs
+
+    - task: run unit-tests and analyze
+      image: python-rootfs
+      file: project-git/ci/common/tasks/python-test.yml
+
+    - aggregate:
+      - put: code-analysis
+        params:
+          project_path: sonarqube-scanner-input
+          project_version_file: version/version
+  
+  # Test on code-analysis needs a separate jobs to perform a get on analysis results.
+  # Bump Version again to be the same as on the unit-test and disable manual control.
+- name: quality-gate
+  serial_groups: [version-modifying]
+  disable_manual_trigger: true
+  plan:
+  - aggregate:
+    - get: project-git
+      passed: ['unit-test']
+    - get: version
+      params: {pre: rc} # repeat bump from above
+      passed: ['unit-test']
+    - get: code-analysis
+      passed: ['unit-test']
+      trigger: true
+
+  - task: check-sonarqube-quality-gate
+    file: project-git/ci/common/tasks/sonarqube-quality-gate.yml
+
+  - aggregate:
+    - put: version
+      params: {file: version/version}
+    - put: project-git
+      params:
+        repository: project-git
+        tag_prefix: v
+        tag: version/version
+        only_tag: true
+
+- name: deploy-package
+  plan:
+  - get: project-git
+    passed: ['quality-gate']
+  - get: version
+    passed: ['quality-gate']
+    trigger: true
+  - get: python-rootfs
+
+  - task: build-package
+    image: python-rootfs
+    file: project-git/ci/common/tasks/python-package.yml
+
+  # - aggregate:
+  #   - put: pypi-package
+  #     params:
+  #       glob: my_package-*.tar.gz
+
+- name: deploy-app
+  plan:
+  - aggregate:
+    - get: project-git
+      passed: ['quality-gate']
+    - get: version
+      passed: ['quality-gate']
+      trigger: true
+    - get: python-rootfs
+
+  - task: build-package
+    image: python-rootfs
+    file: project-git/ci/common/tasks/python-prep-push.yml
+
+  - put: cf-deployment
+    params:
+      manifest: project-git/manifest.yml
+      path: project-git
+
+# ----------------------------------------------------------------------------
+# Versioning
+# ----------------------------------------------------------------------------
+
+- name: manual-bump-major
+  plan:
+  - put: version
+    params: {bump: major, pre: rc}
+
+- name: manual-bump-minor
+  plan:
+  - put: version
+    params: {bump: minor, pre: rc}
+
+- name: bump-patch
+  disable_manual_trigger: true
+  plan:
+  - get: version
+    passed: [ship-current-rc]
+    trigger: true
+  - put: version
+    params: {bump: patch}
+  
+- name: ship-current-rc
+  serial_groups: [version-modifying]
+  plan:
+  - get: project-git
+    passed: ['quality-gate']
+  - get: version
+    passed: ['quality-gate']
+    params: {bump: final}
+
+  #- task: promote-to-final
+  #  file: my-product/ci/promote-to-final.yml
+
+  #- put: my-product-final
+  #  params: {file: promote-to-final/my-product-.*.tgz}
+  - put: version
+    params: {file: version/version}

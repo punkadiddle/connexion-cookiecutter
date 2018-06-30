@@ -24,8 +24,10 @@ lib64/
 parts/
 sdist/
 var/
+vendor/
 *.egg-info/
 .installed.cfg
+.version
 *.egg
 
 # PyInstaller
@@ -46,8 +48,11 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
-*,cover
+test-*.xml
+pylint-report.txt
 .hypothesis/
+.scannerwork/
+.pytest_cache/
 
 # Translations
 *.mo

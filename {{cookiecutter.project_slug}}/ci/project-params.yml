@@ -1,0 +1,7 @@
+# any pipeline
+project_slug: {{cookiecutter.project_slug}}
+project_git: ssh://git@192.168.1.50:8122/demos/flask_demo.git
+project_git_branch: master
+
+# python-build.yml
+python_version: 3.6.6
